@@ -1,20 +1,13 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "frontend/**/*",
-      "use": "@vercel/static"
-    }
+    { "src": "frontend/**/*", "use": "@vercel/static" }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/frontend/$1"
-    }
+    { "src": "/(.*)", "dest": "/frontend/$1" }
   ],
   "env": {
-    "API_URL": "https://ecofinds-api.herokuapp.com"
+    "API_URL": "https://your-backend.example.com"
   },
-  "github": {
-    "silent": true
-  }
+  "github": { "silent": true }
+}

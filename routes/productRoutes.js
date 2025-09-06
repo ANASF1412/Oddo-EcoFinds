@@ -230,27 +230,46 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 /**
  * @route   GET /api/products/user/:userId
  * @desc    Get all products by user
- * @access  Public
+ * @access  Public ("me" requires auth)
  */
 router.get('/user/:userId', async (req, res) => {
   try {
-    const [products] = await pool.query(
-      'SELECT p.*, u.username FROM products p JOIN users u ON p.user_id = u.id WHERE p.user_id = ? AND p.status = "active"',
-      [req.params.userId]
+    let userId = req.params.userId;
+    let statusFilter = '';
+
+    // Support query like /user/me?status=sold
+    if (userId === 'me') {
+      // Try to extract from token if present
+      const authHeader = req.header('Authorization');
+      if (!authHeader) {
+        return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+      }
+      const token = authHeader.split(' ')[1];
+      const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET);
+      userId = decoded.id;
+    }
+
+    if (req.query.status) {
+      statusFilter = ' AND p.status = ?';
+    } else {
+      statusFilter = ' AND p.status = "active"';
+    }
+
+    const params = [userId];
+    if (req.query.status) params.push(req.query.status);
+
+    const [rows] = await pool.query(
+      `SELECT p.*, u.username 
+       FROM products p JOIN users u ON p.user_id = u.id 
+       WHERE p.user_id = ?${statusFilter}
+       ORDER BY p.created_at DESC`,
+      params
     );
 
-    res.json({
-      status: 'success',
-      data: {
-        products
-      }
-    });
+    res.json({ status: 'success', data: { products: rows } });
   } catch (error) {
     console.error('Get user products error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Server error'
-    });
+    res.status(500).json({ status: 'error', message: 'Server error' });
   }
 });
 

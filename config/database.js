@@ -6,18 +6,18 @@ const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: 'oddo',
+  database: process.env.DB_NAME || 'oddo',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
 
-// Initialize database tables
+// Initialize database tables in dependency-safe order
 async function initDatabase() {
   try {
     const connection = await pool.getConnection();
-    
-    // Create Users table with additional fields
+
+    // 1) Core tables first: users, products
     await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -34,81 +34,6 @@ async function initDatabase() {
       )
     `);
 
-    // Create Reviews table
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS reviews (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        product_id INT,
-        reviewer_id INT,
-        seller_id INT,
-        rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
-        comment TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (product_id) REFERENCES products(id),
-        FOREIGN KEY (reviewer_id) REFERENCES users(id),
-        FOREIGN KEY (seller_id) REFERENCES users(id)
-      )
-    `);
-
-    // Create Messages table for chat
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS messages (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        sender_id INT NOT NULL,
-        receiver_id INT NOT NULL,
-        product_id INT,
-        message TEXT NOT NULL,
-        read_at TIMESTAMP NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (sender_id) REFERENCES users(id),
-        FOREIGN KEY (receiver_id) REFERENCES users(id),
-        FOREIGN KEY (product_id) REFERENCES products(id)
-      )
-    `);
-
-    // Create Wishlist table
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS wishlist (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        user_id INT NOT NULL,
-        product_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (product_id) REFERENCES products(id),
-        UNIQUE KEY unique_wishlist (user_id, product_id)
-      )
-    `);
-
-    // Create ProductViews table for recommendations
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS product_views (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        user_id INT NOT NULL,
-        product_id INT NOT NULL,
-        view_count INT DEFAULT 1,
-        last_viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (product_id) REFERENCES products(id),
-        UNIQUE KEY unique_view (user_id, product_id)
-      )
-    `);
-
-    // Add social sharing columns to products table
-    try {
-      await connection.query(`
-        ALTER TABLE products
-        ADD COLUMN share_count INT DEFAULT 0,
-        ADD COLUMN view_count INT DEFAULT 0,
-        ADD COLUMN wishlist_count INT DEFAULT 0
-      `);
-    } catch (error) {
-      // Ignore error if columns already exist
-      if (!error.message.includes('Duplicate column name')) {
-        throw error;
-      }
-    }
-
-    // Create Products table
     await connection.query(`
       CREATE TABLE IF NOT EXISTS products (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -125,7 +50,7 @@ async function initDatabase() {
       )
     `);
 
-    // Create Cart table
+    // 2) Dependent tables
     await connection.query(`
       CREATE TABLE IF NOT EXISTS cart_items (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -138,7 +63,6 @@ async function initDatabase() {
       )
     `);
 
-    // Create Orders table
     await connection.query(`
       CREATE TABLE IF NOT EXISTS orders (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -150,7 +74,6 @@ async function initDatabase() {
       )
     `);
 
-    // Create Order Items table
     await connection.query(`
       CREATE TABLE IF NOT EXISTS order_items (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -162,6 +85,76 @@ async function initDatabase() {
         FOREIGN KEY (product_id) REFERENCES products(id)
       )
     `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        product_id INT,
+        reviewer_id INT,
+        seller_id INT,
+        rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+        comment TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_id) REFERENCES products(id),
+        FOREIGN KEY (reviewer_id) REFERENCES users(id),
+        FOREIGN KEY (seller_id) REFERENCES users(id)
+      )
+    `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        sender_id INT NOT NULL,
+        receiver_id INT NOT NULL,
+        product_id INT,
+        message TEXT NOT NULL,
+        read_at TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sender_id) REFERENCES users(id),
+        FOREIGN KEY (receiver_id) REFERENCES users(id),
+        FOREIGN KEY (product_id) REFERENCES products(id)
+      )
+    `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS wishlist (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        user_id INT NOT NULL,
+        product_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (product_id) REFERENCES products(id),
+        UNIQUE KEY unique_wishlist (user_id, product_id)
+      )
+    `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS product_views (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        user_id INT NOT NULL,
+        product_id INT NOT NULL,
+        view_count INT DEFAULT 1,
+        last_viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (product_id) REFERENCES products(id),
+        UNIQUE KEY unique_view (user_id, product_id)
+      )
+    `);
+
+    // 3) Add optional columns to products after it exists
+    try {
+      await connection.query(`
+        ALTER TABLE products
+        ADD COLUMN share_count INT DEFAULT 0,
+        ADD COLUMN view_count INT DEFAULT 0,
+        ADD COLUMN wishlist_count INT DEFAULT 0
+      `);
+    } catch (error) {
+      if (!String(error.message || '').includes('Duplicate column name')) {
+        // Ignore duplicate column errors only
+        throw error;
+      }
+    }
 
     console.log('Database tables created successfully');
     connection.release();
