@@ -5,8 +5,24 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: oddo
+          MYSQL_USER: dev_user
+          MYSQL_PASSWORD: ''
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
     
     steps:
     - name: Checkout code
@@ -19,10 +35,35 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      run: npm ci --production
+      run: npm ci
       
-    - name: Health check
+    - name: Set up environment
+      run: |
+        echo "DB_HOST=localhost" >> .env
+        echo "DB_USER=dev_user" >> .env
+        echo "DB_PASSWORD=" >> .env
+        echo "DB_NAME=oddo" >> .env
+        echo "JWT_SECRET=test_jwt_secret_for_ci" >> .env
+        echo "NODE_ENV=test" >> .env
+        
+    - name: Wait for MySQL
+      run: |
+        timeout 60 bash -c 'until mysqladmin ping -h localhost -u root -proot --silent; do sleep 1; done'
+        
+    - name: Setup Database
+      run: |
+        mysql -h localhost -u root -proot -e "CREATE USER IF NOT EXISTS 'dev_user'@'%';"
+        mysql -h localhost -u root -proot -e "GRANT ALL PRIVILEGES ON oddo.* TO 'dev_user'@'%';"
+        mysql -h localhost -u root -proot -e "FLUSH PRIVILEGES;"
+        
+    - name: Run Tests
+      run: npm test
+      
+    - name: Build Check
       run: |
         npm start &
-        sleep 5
-        curl -f http://localhost:3000/api/health || exit 1
+        SERVER_PID=$!
+        sleep 10
+        curl -f http://localhost:3000/api/health || (echo "Health check failed" && kill $SERVER_PID && exit 1)
+        kill $SERVER_PID
+        echo "✅ Build and health check successful!"
