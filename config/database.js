@@ -94,12 +94,19 @@ async function initDatabase() {
     `);
 
     // Add social sharing columns to products table
-    await connection.query(`
-      ALTER TABLE products
-      ADD COLUMN IF NOT EXISTS share_count INT DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS view_count INT DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS wishlist_count INT DEFAULT 0
-    `);
+    try {
+      await connection.query(`
+        ALTER TABLE products
+        ADD COLUMN share_count INT DEFAULT 0,
+        ADD COLUMN view_count INT DEFAULT 0,
+        ADD COLUMN wishlist_count INT DEFAULT 0
+      `);
+    } catch (error) {
+      // Ignore error if columns already exist
+      if (!error.message.includes('Duplicate column name')) {
+        throw error;
+      }
+    }
 
     // Create Products table
     await connection.query(`
