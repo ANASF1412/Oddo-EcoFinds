@@ -56,7 +56,17 @@ const auth = {
         body: JSON.stringify(userData)
     }),
 
-    getProfile: () => apiCall('/auth/me')
+    getProfile: () => apiCall('/auth/me'),
+
+    updateProfile: (profileData) => apiCall('/auth/profile', {
+        method: 'PUT',
+        body: JSON.stringify(profileData)
+    }),
+
+    changePassword: (data) => apiCall('/auth/password', {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    })
 };
 
 // Products API calls

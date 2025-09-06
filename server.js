@@ -30,12 +30,19 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const wishlistRoutes = require('./routes/wishlistRoutes');
+const messageRoutes = require('./routes/messageRoutes');
 
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', authMiddleware, cartRoutes);
 app.use('/api/orders', authMiddleware, orderRoutes);
+app.use('/api/wishlist', authMiddleware, wishlistRoutes);
+app.use('/api/messages', authMiddleware, messageRoutes);
+
+// Serve static frontend (optional local dev)
+app.use('/frontend', express.static('frontend'));
 
 // Serve frontend routes
 app.get('/', (req, res) => {

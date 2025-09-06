@@ -37,9 +37,9 @@ async function checkAuthStatus() {
         try {
             const response = await window.ecofindsApi.auth.getProfile();
             if (response.status === 'success') {
-                loginLink.classList.add('hidden');
-                dashboardLink.classList.remove('hidden');
-                cartLink.classList.remove('hidden');
+                if (loginLink) loginLink.classList.add('hidden');
+                if (dashboardLink) dashboardLink.classList.remove('hidden');
+                if (cartLink) cartLink.classList.remove('hidden');
                 if (addProductBtn) addProductBtn.classList.remove('hidden');
                 return true;
             }
@@ -48,9 +48,9 @@ async function checkAuthStatus() {
         }
     }
 
-    loginLink.classList.remove('hidden');
-    dashboardLink.classList.add('hidden');
-    cartLink.classList.add('hidden');
+    if (loginLink) loginLink.classList.remove('hidden');
+    if (dashboardLink) dashboardLink.classList.add('hidden');
+    if (cartLink) cartLink.classList.add('hidden');
     if (addProductBtn) addProductBtn.classList.add('hidden');
     return false;
 }
