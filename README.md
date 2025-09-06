@@ -1,4 +1,4 @@
-# EcoFinds - Professional Sustainable Marketplace
+# EcoFinds -Sustainable Marketplace
 
 A modern, fully-functional marketplace for second-hand treasures that promotes sustainable living through conscious consumption.
 
