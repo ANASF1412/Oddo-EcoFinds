@@ -5,6 +5,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const pool = require('./config/database');
 const authMiddleware = require('./middleware/authMiddleware');
 
@@ -15,11 +16,14 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5000',
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static frontend files
+app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -33,8 +37,19 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', authMiddleware, cartRoutes);
 app.use('/api/orders', authMiddleware, orderRoutes);
 
-// Health check endpoint
+// Serve frontend routes
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
+
+// Handle frontend routes (SPA-like behavior)
+app.get('/*.html', (req, res) => {
+  const filename = req.params[0] + '.html';
+  res.sendFile(path.join(__dirname, 'frontend', filename));
+});
+
+// Health check endpoint (API)
+app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'success',
     message: 'EcoFinds API is running',

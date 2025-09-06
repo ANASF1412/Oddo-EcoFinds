@@ -1,13 +1,29 @@
 // Auth logic for EcoFinds frontend
 function showMessage(message, type = 'error') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type}`;
-    alertDiv.textContent = message;
-    
-    const container = document.querySelector('.container');
-    container.insertBefore(alertDiv, container.firstChild);
-    
-    setTimeout(() => alertDiv.remove(), 5000);
+    const messageDiv = document.getElementById('message');
+    if (messageDiv) {
+        messageDiv.textContent = message;
+        messageDiv.className = `message ${type}`;
+        messageDiv.classList.remove('hidden');
+        
+        // Hide message after 5 seconds
+        setTimeout(() => {
+            messageDiv.classList.add('hidden');
+        }, 5000);
+    } else {
+        // Fallback for pages without message div
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+        
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertBefore(alertDiv, container.firstChild);
+            setTimeout(() => alertDiv.remove(), 5000);
+        } else {
+            alert(message); // Final fallback
+        }
+    }
 }
 
 async function checkAuthStatus() {
@@ -50,12 +66,16 @@ if (document.getElementById('loginForm')) {
         try {
             const response = await window.ecofindsApi.auth.login({ email, password });
             if (response.status === 'success') {
+                showMessage('Login successful! Redirecting...', 'success');
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data.user));
-                window.location.href = 'dashboard.html';
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
             }
         } catch (error) {
-            showMessage(error.message);
+            console.error('Login error:', error);
+            showMessage(error.message || 'Login failed. Please check your credentials.');
         }
     });
 }
@@ -83,12 +103,16 @@ if (document.getElementById('registerForm')) {
             });
             
             if (response.status === 'success') {
+                showMessage('Account created successfully! Redirecting...', 'success');
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data.user));
-                window.location.href = 'dashboard.html';
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
             }
         } catch (error) {
-            showMessage(error.message);
+            console.error('Registration error:', error);
+            showMessage(error.message || 'Registration failed. Please try again.');
         }
     });
 }

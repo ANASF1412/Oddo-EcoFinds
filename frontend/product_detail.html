@@ -1,14 +1,292 @@
-<!-- EcoFinds Product Detail Page -->
-<!-- Use /frontend/js/product.js to fetch product details -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Product Detail - EcoFinds</title>
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - EcoFinds</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h2>Product Detail</h2>
-  <!-- Show product info, image, price, add to cart button -->
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="nav-left">
+                    <a href="index.html" class="navbar-brand">
+                        <i class="fas fa-leaf brand-icon"></i>
+                        <span class="brand-text">EcoFinds</span>
+                    </a>
+                </div>
+
+                <div class="nav-right">
+                    <div class="nav-links">
+                        <a href="index.html" class="nav-link">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                        <a href="login.html" class="nav-link login-link">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                        <a href="register.html" class="nav-link register-link">
+                            <i class="fas fa-user-plus"></i> Sign Up
+                        </a>
+                        <a href="dashboard.html" class="nav-link hidden" id="dashboardLink">
+                            <i class="fas fa-user-circle"></i> Dashboard
+                        </a>
+                        <a href="cart.html" class="nav-link cart-link hidden" id="cartLink">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count" id="cartCount">0</span>
+                        </a>
+                        <button class="nav-link logout-btn hidden" id="logoutBtn" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Product Detail Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span>/</span>
+                <span id="breadcrumbCategory">Products</span>
+                <span>/</span>
+                <span id="breadcrumbProduct">Product Details</span>
+            </nav>
+
+            <div id="productContent">
+                <!-- Loading state -->
+                <div class="loading-container">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading product details...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product not found message -->
+            <div id="productNotFound" class="error-message hidden">
+                <div class="error-content">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h2>Product Not Found</h2>
+                    <p>Sorry, the product you're looking for doesn't exist or has been removed.</p>
+                    <a href="index.html" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <i class="fas fa-leaf brand-icon"></i>
+                        <span class="brand-text">EcoFinds</span>
+                    </div>
+                    <p class="footer-desc">
+                        Your sustainable marketplace for second-hand treasures
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="dashboard.html">Dashboard</a></li>
+                        <li><a href="add_product.html">Sell Item</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 EcoFinds. Made with 💚 for a sustainable future.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/product.js"></script>
+    
+    <script>
+        // Get product ID from URL parameters
+        function getProductIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // Load product details
+        async function loadProductDetails() {
+            const productId = getProductIdFromUrl();
+            
+            if (!productId) {
+                showProductNotFound();
+                return;
+            }
+
+            try {
+                const response = await window.ecofindsApi.products.getById(productId);
+                if (response.status === 'success') {
+                    displayProductDetails(response.data);
+                } else {
+                    showProductNotFound();
+                }
+            } catch (error) {
+                console.error('Error loading product:', error);
+                showProductNotFound();
+            }
+        }
+
+        // Display product details
+        function displayProductDetails(product) {
+            const productContent = document.getElementById('productContent');
+            
+            // Update breadcrumb
+            document.getElementById('breadcrumbCategory').textContent = product.category;
+            document.getElementById('breadcrumbProduct').textContent = product.title;
+            document.title = `${product.title} - EcoFinds`;
+
+            productContent.innerHTML = `
+                <div class="product-detail-container">
+                    <div class="product-images">
+                        <div class="main-image">
+                            <img src="${product.image_url || 'img/placeholder.png'}" alt="${product.title}" id="mainImage">
+                        </div>
+                    </div>
+                    
+                    <div class="product-info">
+                        <div class="product-header">
+                            <span class="badge badge-category">${product.category}</span>
+                            <span class="badge badge-${product.status === 'available' ? 'success' : 'secondary'}">${product.status}</span>
+                        </div>
+                        
+                        <h1 class="product-title">${product.title}</h1>
+                        
+                        <div class="product-price">
+                            <span class="price">$${product.price}</span>
+                        </div>
+                        
+                        <div class="product-description">
+                            <h3>Description</h3>
+                            <p>${product.description}</p>
+                        </div>
+                        
+                        <div class="product-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-user-circle"></i>
+                                <span>Sold by: <strong>${product.username}</strong></span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Listed: ${new Date(product.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="product-actions">
+                            ${product.status === 'available' ? `
+                                <button class="btn btn-primary btn-large" onclick="addToCart(${product.id})">
+                                    <i class="fas fa-cart-plus"></i> Add to Cart
+                                </button>
+                                <button class="btn btn-outline btn-large" onclick="toggleWishlist(${product.id})">
+                                    <i class="far fa-heart"></i> Add to Wishlist
+                                </button>
+                            ` : `
+                                <button class="btn btn-secondary btn-large" disabled>
+                                    <i class="fas fa-times"></i> Not Available
+                                </button>
+                            `}
+                        </div>
+                        
+                        <div class="environmental-impact">
+                            <h3><i class="fas fa-leaf"></i> Environmental Impact</h3>
+                            <div class="impact-stats">
+                                <div class="impact-item">
+                                    <i class="fas fa-recycle"></i>
+                                    <span>Giving this item a second life</span>
+                                </div>
+                                <div class="impact-item">
+                                    <i class="fas fa-tree"></i>
+                                    <span>Reducing manufacturing demand</span>
+                                </div>
+                                <div class="impact-item">
+                                    <i class="fas fa-globe"></i>
+                                    <span>Supporting sustainable consumption</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show product not found
+        function showProductNotFound() {
+            document.getElementById('productContent').classList.add('hidden');
+            document.getElementById('productNotFound').classList.remove('hidden');
+        }
+
+        // Add to cart function
+        async function addToCart(productId) {
+            try {
+                const response = await window.ecofindsApi.cart.add({ product_id: productId, quantity: 1 });
+                if (response.status === 'success') {
+                    showMessage('Product added to cart successfully!', 'success');
+                    updateCartCount();
+                } else {
+                    showMessage(response.message || 'Failed to add product to cart', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                if (error.message.includes('login') || error.message.includes('token')) {
+                    showMessage('Please log in to add items to cart', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showMessage('Failed to add product to cart', 'error');
+                }
+            }
+        }
+
+        // Toggle wishlist function (placeholder)
+        async function toggleWishlist(productId) {
+            showMessage('Wishlist feature coming soon!', 'info');
+        }
+
+        // Show message function
+        function showMessage(message, type = 'success') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+            document.body.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+            loadProductDetails();
+            updateCartCount();
+        });
+    </script>
 </body>
 </html>

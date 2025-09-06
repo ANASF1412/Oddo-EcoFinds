@@ -6,7 +6,7 @@ const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: 'oddo',
+  database: process.env.DB_NAME || 'oddo',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -16,6 +16,7 @@ const pool = mysql.createPool({
 async function initDatabase() {
   try {
     const connection = await pool.getConnection();
+    console.log('✅ Database connected successfully');
     
     // Create Users table with additional fields
     await connection.query(`
@@ -31,6 +32,26 @@ async function initDatabase() {
         rating_count INT DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create Products table FIRST (before dependent tables)
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS products (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        user_id INT NOT NULL,
+        title VARCHAR(100) NOT NULL,
+        description TEXT,
+        price DECIMAL(10,2) NOT NULL,
+        category VARCHAR(50) NOT NULL,
+        image_url VARCHAR(255),
+        status ENUM('active', 'sold', 'inactive') DEFAULT 'active',
+        share_count INT DEFAULT 0,
+        view_count INT DEFAULT 0,
+        wishlist_count INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
 
@@ -93,38 +114,6 @@ async function initDatabase() {
       )
     `);
 
-    // Add social sharing columns to products table
-    try {
-      await connection.query(`
-        ALTER TABLE products
-        ADD COLUMN share_count INT DEFAULT 0,
-        ADD COLUMN view_count INT DEFAULT 0,
-        ADD COLUMN wishlist_count INT DEFAULT 0
-      `);
-    } catch (error) {
-      // Ignore error if columns already exist
-      if (!error.message.includes('Duplicate column name')) {
-        throw error;
-      }
-    }
-
-    // Create Products table
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS products (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        user_id INT NOT NULL,
-        title VARCHAR(100) NOT NULL,
-        description TEXT,
-        price DECIMAL(10,2) NOT NULL,
-        category VARCHAR(50) NOT NULL,
-        image_url VARCHAR(255),
-        status ENUM('active', 'sold', 'inactive') DEFAULT 'active',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      )
-    `);
-
     // Create Cart table
     await connection.query(`
       CREATE TABLE IF NOT EXISTS cart_items (
@@ -163,15 +152,16 @@ async function initDatabase() {
       )
     `);
 
-    console.log('Database tables created successfully');
+    console.log('✅ Database tables created successfully');
     connection.release();
   } catch (error) {
-    console.error('Error initializing database:', error);
-    throw error;
+    console.error('❌ Error initializing database:', error.message);
+    console.log('⚠️  Server will continue running but database features will be unavailable');
+    console.log('💡 Please check your MySQL configuration and credentials in .env file');
   }
 }
 
 // Initialize database when this module is imported
-initDatabase().catch(console.error);
+initDatabase();
 
 module.exports = pool;

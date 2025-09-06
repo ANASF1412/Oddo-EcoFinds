@@ -1,11 +1,15 @@
 {
   "name": "ecofinds",
   "version": "1.0.0",
-  "description": "EcoFinds - Second-hand marketplace web app",
+  "description": "EcoFinds - Professional sustainable marketplace for second-hand treasures",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "prod": "NODE_ENV=production node server.js",
+    "test": "echo \"✅ EcoFinds tests would go here\" && exit 0",
+    "deploy": "npm install --production",
+    "health": "curl -f http://localhost:3000/api/health || exit 1"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -19,7 +23,28 @@
   "devDependencies": {
     "nodemon": "^3.1.10"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "marketplace",
+    "sustainable",
+    "second-hand",
+    "eco-friendly",
+    "nodejs",
+    "express",
+    "mysql",
+    "ecommerce"
+  ],
+  "author": "ANASF1412",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ANASF1412/Oddo-EcoFinds.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ANASF1412/Oddo-EcoFinds/issues"
+  },
+  "homepage": "https://github.com/ANASF1412/Oddo-EcoFinds#readme"
 }

@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # EcoFinds Application
+  ecofinds-app:
+    build: .
+    container_name: ecofinds-marketplace
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=your-super-secret-jwt-key
+      - DB_HOST=ecofinds-db
+      - DB_USER=ecofinds_user
+      - DB_PASS=ecofinds_password
+      - DB_NAME=ecofinds_db
+    depends_on:
+      ecofinds-db:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - ecofinds-network
+
+  # MySQL Database
+  ecofinds-db:
+    image: mysql:8.0
+    container_name: ecofinds-database
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_change_in_production
+      MYSQL_DATABASE: ecofinds_db
+      MYSQL_USER: ecofinds_user
+      MYSQL_PASSWORD: ecofinds_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ecofinds-mysql-data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ecofinds-network
+
+  # nginx reverse proxy (optional)
+  ecofinds-nginx:
+    image: nginx:alpine
+    container_name: ecofinds-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - ecofinds-app
+    restart: unless-stopped
+    networks:
+      - ecofinds-network
+
+volumes:
+  ecofinds-mysql-data:
+
+networks:
+  ecofinds-network:
+    driver: bridge

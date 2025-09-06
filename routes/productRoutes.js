@@ -62,6 +62,33 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * @route   GET /api/products/user/:userId
+ * @desc    Get all products by user
+ * @access  Public
+ */
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const [products] = await pool.query(
+      'SELECT p.*, u.username FROM products p JOIN users u ON p.user_id = u.id WHERE p.user_id = ? AND p.status = "active"',
+      [req.params.userId]
+    );
+
+    res.json({
+      status: 'success',
+      data: {
+        products
+      }
+    });
+  } catch (error) {
+    console.error('Get user products error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Server error'
+    });
+  }
+});
+
+/**
  * @route   GET /api/products/:id
  * @desc    Get single product by ID
  * @access  Public
@@ -227,31 +254,5 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-/**
- * @route   GET /api/products/user/:userId
- * @desc    Get all products by user
- * @access  Public
- */
-router.get('/user/:userId', async (req, res) => {
-  try {
-    const [products] = await pool.query(
-      'SELECT p.*, u.username FROM products p JOIN users u ON p.user_id = u.id WHERE p.user_id = ? AND p.status = "active"',
-      [req.params.userId]
-    );
-
-    res.json({
-      status: 'success',
-      data: {
-        products
-      }
-    });
-  } catch (error) {
-    console.error('Get user products error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Server error'
-    });
-  }
-});
 
 module.exports = router;

@@ -27,9 +27,22 @@ async function apiCall(endpoint, options = {}) {
         return data;
     } catch (error) {
         console.error(`API Error: ${endpoint}`, error);
-        throw error;
+        
+        // If it's a network error, provide a helpful message
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+            throw new Error('Unable to connect to server. Please check if the server is running.');
+        }
+        
+        // If it's a server error with a message, use that
+        if (error.message) {
+            throw error;
+        }
+        
+        // Generic fallback error
+        throw new Error('Something went wrong. Please try again.');
     }
 }
+
 
 // Auth API calls
 const auth = {

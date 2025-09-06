@@ -3,95 +3,465 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoFinds - Sustainable Marketplace</title>
+    <title>EcoFinds - Sustainable Marketplace for Second-Hand Treasures</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
             <div class="nav-content">
-                <a href="index.html" class="navbar-brand">
-                    <i class="fas fa-leaf"></i> EcoFinds
-                </a>
-                <button class="nav-toggle" id="navToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="nav-links" id="navLinks">
-                    <div class="search-bar">
-                        <input type="text" id="searchInput" placeholder="Search products...">
-                        <button id="searchBtn"><i class="fas fa-search"></i></button>
+                <div class="nav-left">
+                    <a href="index.html" class="navbar-brand">
+                        <i class="fas fa-leaf brand-icon"></i>
+                        <span class="brand-text">EcoFinds</span>
+                    </a>
+                </div>
+                
+                <div class="nav-center">
+                    <div class="search-container">
+                        <div class="search-bar">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="searchInput" placeholder="Search for sustainable treasures...">
+                            <button id="searchBtn" class="search-btn">Search</button>
+                        </div>
+                        <div class="category-filter">
+                            <div class="custom-dropdown" id="categoryDropdown">
+                                <div class="dropdown-selected" id="categorySelected">
+                                    <span class="selected-text">All Categories</span>
+                                    <i class="fas fa-chevron-down dropdown-arrow"></i>
+                                </div>
+                                <div class="dropdown-options" id="categoryOptions">
+                                    <div class="dropdown-option active" data-value="">
+                                        <i class="fas fa-list"></i>
+                                        <span>All Categories</span>
+                                    </div>
+                                    <div class="dropdown-option" data-value="electronics">
+                                        <i class="fas fa-laptop"></i>
+                                        <span>Electronics</span>
+                                    </div>
+                                    <div class="dropdown-option" data-value="furniture">
+                                        <i class="fas fa-couch"></i>
+                                        <span>Furniture</span>
+                                    </div>
+                                    <div class="dropdown-option" data-value="clothing">
+                                        <i class="fas fa-tshirt"></i>
+                                        <span>Clothing</span>
+                                    </div>
+                                    <div class="dropdown-option" data-value="books">
+                                        <i class="fas fa-book"></i>
+                                        <span>Books</span>
+                                    </div>
+                                    <div class="dropdown-option" data-value="other">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                        <span>Other</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="categoryFilter" value="">
+                        </div>
                     </div>
-                    <div class="category-filter">
-                        <select id="categoryFilter">
-                            <option value="">All Categories</option>
-                            <option value="electronics">Electronics</option>
-                            <option value="furniture">Furniture</option>
-                            <option value="clothing">Clothing</option>
-                            <option value="books">Books</option>
-                            <option value="other">Other</option>
-                        </select>
+                </div>
+
+                <div class="nav-right">
+                    <button class="nav-toggle" id="navToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="nav-links" id="navLinks">
+                        <a href="login.html" class="nav-link login-link" id="loginLink">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                        <a href="register.html" class="nav-link register-link">
+                            <i class="fas fa-user-plus"></i> Sign Up
+                        </a>
+                        <a href="dashboard.html" class="nav-link hidden" id="dashboardLink">
+                            <i class="fas fa-user-circle"></i> Dashboard
+                        </a>
+                        <a href="cart.html" class="nav-link cart-link hidden" id="cartLink">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count" id="cartCount">0</span>
+                        </a>
+                        <button class="nav-link logout-btn hidden" id="logoutBtn" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
                     </div>
-                    <a href="login.html" class="nav-link" id="loginLink">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                    <a href="dashboard.html" class="nav-link hidden" id="dashboardLink">
-                        <i class="fas fa-user"></i> Dashboard
-                    </a>
-                    <a href="cart.html" class="nav-link hidden" id="cartLink">
-                        <i class="fas fa-shopping-cart"></i> Cart
-                        <span class="cart-count" id="cartCount">0</span>
-                    </a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="container">
-        <section class="hero">
-            <h1>Welcome to EcoFinds</h1>
-            <p>Your sustainable marketplace for pre-owned treasures</p>
-            <a href="add_product.html" class="btn" id="addProductBtn">
-                <i class="fas fa-plus"></i> List Your Item
-            </a>
-        </section>
-
-        <section class="filters">
-            <div class="sort-options">
-                <label for="sortBy">Sort by:</label>
-                <select id="sortBy">
-                    <option value="newest">Newest First</option>
-                    <option value="price_low">Price: Low to High</option>
-                    <option value="price_high">Price: High to Low</option>
-                </select>
-            </div>
-        </section>
-
-        <section class="products">
-            <div class="grid" id="productGrid">
-                <!-- Products will be dynamically loaded here -->
-                <div class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> Loading products...
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="container">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Give Items a <span class="highlight">Second Life</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Discover amazing pre-loved treasures while contributing to a sustainable future. 
+                        Buy, sell, and connect with your community through conscious consumption.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#featured-products" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Explore Products
+                        </a>
+                        <a href="add_product.html" class="btn btn-outline" id="addProductBtn">
+                            <i class="fas fa-plus"></i> Sell Your Item
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">10K+</div>
+                        <div class="stat-label">Happy Users</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">50K+</div>
+                        <div class="stat-label">Items Saved</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">2M+</div>
+                        <div class="stat-label">CO₂ Reduced</div>
+                    </div>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
 
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose EcoFinds?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3>Eco-Friendly</h3>
+                    <p>Reduce waste and environmental impact by giving items a second chance.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <h3>Save Money</h3>
+                    <p>Find quality items at affordable prices while supporting sustainable shopping.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Community</h3>
+                    <p>Connect with like-minded people who care about the environment.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Trusted & Safe</h3>
+                    <p>Secure transactions with verified users and quality assurance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products Section -->
+    <section class="products-section" id="featured-products">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Featured Products</h2>
+                <div class="section-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="electronics">Electronics</button>
+                    <button class="filter-btn" data-filter="furniture">Furniture</button>
+                    <button class="filter-btn" data-filter="clothing">Fashion</button>
+                </div>
+            </div>
+            
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be loaded here -->
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading sustainable treasures...</p>
+                </div>
+            </div>
+            
+            <div class="load-more-container">
+                <button class="btn btn-outline" id="loadMoreBtn">
+                    <i class="fas fa-plus"></i> Load More Products
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Make a Difference?</h2>
+                <p>Join thousands of users creating a more sustainable future, one item at a time.</p>
+                <div class="cta-actions">
+                    <a href="register.html" class="btn btn-primary btn-large">
+                        <i class="fas fa-rocket"></i> Get Started Today
+                    </a>
+                    <a href="#" class="btn btn-link" onclick="scrollToSection('features')">
+                        Learn More <i class="fas fa-arrow-down"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 EcoFinds. All rights reserved.</p>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <i class="fas fa-leaf"></i>
+                        <span>EcoFinds</span>
+                    </div>
+                    <p>Building a sustainable future through conscious consumption and community.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Marketplace</h4>
+                    <ul>
+                        <li><a href="#featured-products">Browse Products</a></li>
+                        <li><a href="add_product.html">Sell Items</a></li>
+                        <li><a href="categories.html">Categories</a></li>
+                        <li><a href="favorites.html">Favorites</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="sustainability.html">Sustainability</a></li>
+                        <li><a href="success-stories.html">Success Stories</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="help.html">Help Center</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 EcoFinds. All rights reserved. Made with 💚 for the planet.</p>
+            </div>
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/product.js"></script>
     <script>
-        // Check authentication status on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuthStatus();
-            loadProducts();
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuthStatus();
+            await loadFeaturedProducts();
+            initializeSearch();
+            initializeFilters();
         });
+
+        // Load featured products
+        async function loadFeaturedProducts() {
+            try {
+                const response = await window.ecofindsApi.products.getAll({ limit: 8 });
+                if (response.status === 'success') {
+                    displayProducts(response.data.products);
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('productsGrid').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Unable to load products. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Display products
+        function displayProducts(products) {
+            const productsGrid = document.getElementById('productsGrid');
+            
+            if (products.length === 0) {
+                productsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>No products found</h3>
+                        <p>Be the first to add a sustainable treasure!</p>
+                        <a href="add_product.html" class="btn btn-primary">Add Product</a>
+                    </div>
+                `;
+                return;
+            }
+
+            productsGrid.innerHTML = products.map(product => `
+                <div class="product-card" data-category="${product.category}">
+                    <div class="product-image">
+                        <img src="${product.image_url || 'img/placeholder.png'}" alt="${product.title}">
+                        <div class="product-badges">
+                            <span class="badge badge-category">${product.category}</span>
+                            ${product.status === 'sold' ? '<span class="badge badge-sold">SOLD</span>' : ''}
+                        </div>
+                        <button class="wishlist-btn" onclick="toggleWishlist(${product.id})">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">${product.title}</h3>
+                        <p class="product-description">${product.description.substring(0, 100)}...</p>
+                        <div class="product-seller">
+                            <i class="fas fa-user-circle"></i>
+                            <span>by ${product.username}</span>
+                        </div>
+                        <div class="product-footer">
+                            <div class="product-price">$${product.price}</div>
+                            <div class="product-actions">
+                                <button class="btn btn-sm btn-outline" onclick="viewProduct(${product.id})">
+                                    View Details
+                                </button>
+                                <button class="btn btn-sm btn-primary" onclick="addToCart(${product.id})" ${product.status === 'sold' ? 'disabled' : ''}>
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize search functionality
+        function initializeSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const categoryFilter = document.getElementById('categoryFilter');
+
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') performSearch();
+            });
+            
+            // Initialize custom dropdown
+            initializeCustomDropdown();
+        }
+
+        // Initialize custom dropdown functionality
+        function initializeCustomDropdown() {
+            const dropdown = document.getElementById('categoryDropdown');
+            const selected = document.getElementById('categorySelected');
+            const options = document.getElementById('categoryOptions');
+            const hiddenInput = document.getElementById('categoryFilter');
+
+            // Toggle dropdown
+            selected.addEventListener('click', function() {
+                dropdown.classList.toggle('open');
+            });
+
+            // Handle option selection
+            options.addEventListener('click', function(e) {
+                const option = e.target.closest('.dropdown-option');
+                if (!option) return;
+
+                // Update active state
+                document.querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+
+                // Update selected display
+                const icon = option.querySelector('i').outerHTML;
+                const text = option.querySelector('span').textContent;
+                selected.querySelector('.selected-text').innerHTML = icon + ' ' + text;
+
+                // Update hidden input
+                hiddenInput.value = option.dataset.value;
+
+                // Close dropdown
+                dropdown.classList.remove('open');
+
+                // Trigger search
+                performSearch();
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove('open');
+                }
+            });
+        }
+
+        // Perform search
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value;
+            const category = document.getElementById('categoryFilter').value;
+            
+            try {
+                const params = {};
+                if (query) params.search = query;
+                if (category) params.category = category;
+                
+                const response = await window.ecofindsApi.products.getAll(params);
+                if (response.status === 'success') {
+                    displayProducts(response.data.products);
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }
+
+        // Initialize filter buttons
+        function initializeFilters() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filter = this.dataset.filter;
+                    if (filter === 'all') {
+                        loadFeaturedProducts();
+                    } else {
+                        document.getElementById('categoryFilter').value = filter;
+                        performSearch();
+                    }
+                });
+            });
+        }
+
+        // Utility functions
+        function viewProduct(productId) {
+            window.location.href = `product_detail.html?id=${productId}`;
+        }
+
+        function addToCart(productId) {
+            // Will be implemented with cart functionality
+            alert('Added to cart! (Feature coming soon)');
+        }
+
+        function toggleWishlist(productId) {
+            // Will be implemented with wishlist functionality
+            alert('Added to wishlist! (Feature coming soon)');
+        }
+
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
     </script>
 </body>
 </html>
