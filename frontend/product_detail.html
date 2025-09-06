@@ -246,8 +246,11 @@
             try {
                 const response = await window.ecofindsApi.cart.add({ product_id: productId, quantity: 1 });
                 if (response.status === 'success') {
-                    showMessage('Product added to cart successfully!', 'success');
+                    showMessage('Product added to cart successfully! Redirecting to cart...', 'success');
                     updateCartCount();
+                    setTimeout(() => {
+                        window.location.href = 'cart.html';
+                    }, 2000);
                 } else {
                     showMessage(response.message || 'Failed to add product to cart', 'error');
                 }

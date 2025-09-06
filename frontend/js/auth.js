@@ -66,11 +66,11 @@ if (document.getElementById('loginForm')) {
         try {
             const response = await window.ecofindsApi.auth.login({ email, password });
             if (response.status === 'success') {
-                showMessage('Login successful! Redirecting...', 'success');
+                showMessage('Login successful! Redirecting to home...', 'success');
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data.user));
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = 'index.html';
                 }, 1500);
             }
         } catch (error) {
@@ -103,11 +103,11 @@ if (document.getElementById('registerForm')) {
             });
             
             if (response.status === 'success') {
-                showMessage('Account created successfully! Redirecting...', 'success');
+                showMessage('Account created successfully! Redirecting to home...', 'success');
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data.user));
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = 'index.html';
                 }, 1500);
             }
         } catch (error) {

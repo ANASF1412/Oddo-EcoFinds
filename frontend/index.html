@@ -449,9 +449,29 @@
             window.location.href = `product_detail.html?id=${productId}`;
         }
 
-        function addToCart(productId) {
-            // Will be implemented with cart functionality
-            alert('Added to cart! (Feature coming soon)');
+        async function addToCart(productId) {
+            try {
+                const response = await window.ecofindsApi.cart.add({ product_id: productId, quantity: 1 });
+                if (response.status === 'success') {
+                    showMessage('Product added to cart successfully! Redirecting to cart...', 'success');
+                    updateCartCount();
+                    setTimeout(() => {
+                        window.location.href = 'cart.html';
+                    }, 2000);
+                } else {
+                    showMessage(response.message || 'Failed to add product to cart', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                if (error.message.includes('login') || error.message.includes('token')) {
+                    showMessage('Please log in to add items to cart', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showMessage('Failed to add product to cart', 'error');
+                }
+            }
         }
 
         function toggleWishlist(productId) {
@@ -461,6 +481,56 @@
 
         function scrollToSection(sectionId) {
             document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Helper function to show messages
+        function showMessage(message, type = 'success') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            
+            // Add styles for the message
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : '#dc3545'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                z-index: 9999;
+                max-width: 400px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: slideInRight 0.3s ease-out;
+            `;
+
+            document.body.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => messageDiv.remove(), 300);
+            }, 3000);
+        }
+
+        // Helper function to update cart count
+        async function updateCartCount() {
+            try {
+                const response = await window.ecofindsApi.cart.get();
+                const cartCountElements = document.querySelectorAll('#cartCount, .cart-count');
+                const totalItems = response.data.items.reduce((sum, item) => sum + item.quantity, 0);
+                
+                cartCountElements.forEach(element => {
+                    if (element) {
+                        element.textContent = totalItems;
+                        element.style.display = totalItems > 0 ? 'inline' : 'none';
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating cart count:', error);
+            }
         }
     </script>
 </body>
