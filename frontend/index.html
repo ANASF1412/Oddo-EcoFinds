@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoFinds - Sustainable Marketplace</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="navbar-brand">
+                    <i class="fas fa-leaf"></i> EcoFinds
+                </a>
+                <button class="nav-toggle" id="navToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="nav-links" id="navLinks">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search products...">
+                        <button id="searchBtn"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="category-filter">
+                        <select id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="furniture">Furniture</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="books">Books</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <a href="login.html" class="nav-link" id="loginLink">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="dashboard.html" class="nav-link hidden" id="dashboardLink">
+                        <i class="fas fa-user"></i> Dashboard
+                    </a>
+                    <a href="cart.html" class="nav-link hidden" id="cartLink">
+                        <i class="fas fa-shopping-cart"></i> Cart
+                        <span class="cart-count" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Welcome to EcoFinds</h1>
+            <p>Your sustainable marketplace for pre-owned treasures</p>
+            <a href="add_product.html" class="btn" id="addProductBtn">
+                <i class="fas fa-plus"></i> List Your Item
+            </a>
+        </section>
+
+        <section class="filters">
+            <div class="sort-options">
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy">
+                    <option value="newest">Newest First</option>
+                    <option value="price_low">Price: Low to High</option>
+                    <option value="price_high">Price: High to Low</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="products">
+            <div class="grid" id="productGrid">
+                <!-- Products will be dynamically loaded here -->
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading products...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 EcoFinds. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/product.js"></script>
+    <script>
+        // Check authentication status on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+            loadProducts();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16.x'
+        
+    - name: Install Dependencies
+      run: npm ci
+      
+    - name: Run Tests
+      run: npm test
+      
+    - name: Deploy to Heroku
+      uses: akhileshns/heroku-deploy@v3.12.12
+      with:
+        heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+        heroku_app_name: "ecofinds-api"
+        heroku_email: ${{secrets.HEROKU_EMAIL}}
+      env:
+        HD_DB_HOST: ${{secrets.DB_HOST}}
+        HD_DB_USER: ${{secrets.DB_USER}}
+        HD_DB_PASSWORD: ${{secrets.DB_PASSWORD}}
+        HD_DB_NAME: ${{secrets.DB_NAME}}
+        HD_JWT_SECRET: ${{secrets.JWT_SECRET}}
